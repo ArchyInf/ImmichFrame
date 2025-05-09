@@ -41,8 +41,34 @@
 	let naturalHeight = $state(0);
 	let scale = $state(1.0);
 
+	let hasPerson = $derived(image[1].people?.filter((x) => x.name).length ?? 0 > 0);
+	
 	onMount(() => {
 		function updateImageMetrics() {
+			
+			imageZoom = !debug;
+			
+			naturalWidth = imgEl.naturalWidth;
+			naturalHeight = imgEl.naturalHeight;
+			wrapperWidth = wrapperEl.clientWidth;
+			wrapperHeight = wrapperEl.clientHeight;
+
+			// 1. fill screen without letterbox
+			let aspectImg = naturalWidth / naturalHeight;
+			let aspectDiv = wrapperWidth / wrapperHeight;
+			if(aspectImg > aspectDiv) {
+				scale = wrapperHeight / naturalHeight;
+			} else {
+				scale = wrapperWidth / naturalWidth;
+			}
+			
+			centerX = naturalWidth / 2;
+			centerY = naturalHeight / 2;
+			
+			if (!hasPerson) {
+				return;
+			}
+			
 			let faceBoundsX1 = 1000000;
 			let faceBoundsY1 = 1000000;
 			let faceBoundsX2 = 0;
@@ -58,26 +84,6 @@
 				faceBoundsY2 = Math.max(face.boundingBoxY2 ?? 0, faceBoundsY2);
 			}
 
-			imageZoom = !debug;
-
-			naturalWidth = imgEl.naturalWidth;
-			naturalHeight = imgEl.naturalHeight;
-			wrapperWidth = wrapperEl.clientWidth;
-			wrapperHeight = wrapperEl.clientHeight;
-		
-			// idea: enforce faceBounds to be visible
-			// 1. fill screen without letterbox
-			let aspectImg = naturalWidth / naturalHeight;
-			let aspectDiv = wrapperWidth / wrapperHeight;
-			if(aspectImg > aspectDiv) {
-				scale = wrapperHeight / naturalHeight;
-			} else {
-				scale = wrapperWidth / naturalWidth;
-			}
-
-			centerX = naturalWidth / 2;
-			centerY = naturalHeight / 2;
-			
 			// 2. decrease scale until face rect could fit into screen
 			let faceBoundsWidth = faceBoundsX2 - faceBoundsX1;
 			let faceBoundsHeight = faceBoundsY2 - faceBoundsY1;
