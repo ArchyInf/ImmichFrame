@@ -85,19 +85,19 @@
 			}
 
 			// 2. decrease scale until face rect could fit into screen
-			let faceBoundsWidth = faceBoundsX2 - faceBoundsX1;
-			let faceBoundsHeight = faceBoundsY2 - faceBoundsY1;
-			scale = scale * Math.min(wrapperWidth / (scale * faceBoundsWidth), 1)
-			scale = scale * Math.min(wrapperHeight / (scale * faceBoundsHeight), 1)
+			const faceBoundsWidth = faceBoundsX2 - faceBoundsX1;
+			const faceBoundsHeight = faceBoundsY2 - faceBoundsY1;
+			scale *= Math.min(wrapperWidth / (scale * faceBoundsWidth), 1)
+			scale *= Math.min(wrapperHeight / (scale * faceBoundsHeight), 1)
 			
 			// 3. move center until faces are on screen
 			const visibleWidth = wrapperWidth / scale;
 			const visibleHeight = wrapperHeight / scale;
 			
-			let visibleX1 = centerX - (visibleWidth / 2);
-			let visibleX2 = centerX + (visibleWidth / 2);
-			let visibleY1 = centerY - (visibleHeight / 2);
-			let visibleY2 = centerY + (visibleHeight / 2);
+			const visibleX1 = centerX - (visibleWidth / 2);
+			const visibleX2 = centerX + (visibleWidth / 2);
+			const visibleY1 = centerY - (visibleHeight / 2);
+			const visibleY2 = centerY + (visibleHeight / 2);
 
 			if (visibleX1 > faceBoundsX1) {
 				centerX -= visibleX1 - faceBoundsX1;
