@@ -100,10 +100,10 @@
 			let visibleY2 = centerY + (visibleHeight / 2);
 
 			if (visibleX1 > faceBoundsX1) {
-				centerY -= visibleX1 - faceBoundsX1;
+				centerX -= visibleX1 - faceBoundsX1;
 			}
 			else if (visibleX2 < faceBoundsX2) {
-				centerY -= faceBoundsX2 - visibleX2;
+				centerX -= faceBoundsX2 - visibleX2;
 			}
 
 			if (visibleY1 > faceBoundsY1) {
