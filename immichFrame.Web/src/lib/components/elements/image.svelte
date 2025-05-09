@@ -3,6 +3,7 @@
 	import { decodeBase64 } from '$lib/utils';
 	import { thumbHashToDataURL } from 'thumbhash';
 	import AssetInfo from './asset-info.svelte';
+	import { onMount } from 'svelte';
 
 	interface Props {
 		image: [url: string, asset: AssetResponseDto];
@@ -28,98 +29,132 @@
 		multi = false
 	}: Props = $props();
 
-	let debug = false;
+	let debug = true;
+	let imgEl: HTMLImageElement;
+	let wrapperEl: HTMLDivElement;
+	
+	let renderedWidth = 0;
+	let renderedHeight = 0;
+	let offsetX = 0;
+	let offsetY = 0;
+	let scaleX = 1;
+	let scaleY = 1;
+	let wrapperWidth = 100;
+	let wrapperHeight = 100;
+	
+	let positionX = 0;
+	let positionY = 0;
 
 	let hasPerson = $derived(image[1].people?.filter((x) => x.name).length ?? 0 > 0);
 
+	onMount(() => {
+		function updateImageMetrics() {
+			let faceBoundsMinX = 1000000;
+			let faceBoundsMinY = 1000000;
+			let faceBoundsMaxX = 0;
+			let faceBoundsMaxY = 0;
+
+			let person = image[1].people as PersonWithFacesResponseDto[];
+			for (let i = 0; i < person.length; i++) {
+				person = person.filter((x) => x.name);
+				let face = person[i].faces[0];
+				faceBoundsMinX = Math.min(face.boundingBoxX1 ?? 0, faceBoundsMinX);
+				faceBoundsMinY = Math.min(face.boundingBoxY1 ?? 0, faceBoundsMinY);
+				faceBoundsMaxX = Math.max(face.boundingBoxX2 ?? 0, faceBoundsMaxX);
+				faceBoundsMaxY = Math.max(face.boundingBoxY2 ?? 0, faceBoundsMaxY);
+			}
+
+			positionX = 0.5 * (faceBoundsMinX + faceBoundsMaxX);
+			positionY = 0.5 * (faceBoundsMinY + faceBoundsMaxY);
+			// positionX = 0;
+			// positionX = 0;
+			
+			imageZoom = !debug;
+
+			if (!imgEl || !imgEl.complete || !wrapperEl) return;
+			
+			renderedWidth = imgEl.clientWidth;
+			renderedHeight = imgEl.clientHeight;
+
+			const naturalWidth = imgEl.naturalWidth;
+			const naturalHeight = imgEl.naturalHeight;
+		
+			// size of render area
+			wrapperWidth = wrapperEl.clientWidth;
+			wrapperHeight = wrapperEl.clientHeight;
+
+			scaleX = renderedWidth / naturalWidth;
+			scaleY = renderedHeight / naturalHeight;
+
+			offsetX = (wrapperWidth - renderedWidth) / 2;
+			offsetY = (wrapperHeight - renderedHeight) / 2;
+
+			if (debug) console.log(`X ${faceBoundsMinX}`);
+			if (debug) console.log(`Y ${faceBoundsMinY}`);
+			if (debug) console.log(`W ${faceBoundsMaxX}`);
+			if (debug) console.log(`H ${faceBoundsMaxY}`);
+			if (debug) console.log(`Pos (${positionX},${positionY})`);
+			// if (debug) console.log(`X ${imgEl.getBoundingClientRect().x}`);
+			// if (debug) console.log(`Y ${imgEl.getBoundingClientRect().y}`);
+			// if (debug) console.log(`W ${imgEl.getBoundingClientRect().width}`);
+			// if (debug) console.log(`H ${imgEl.getBoundingClientRect().height}`);
+		}
+
+		updateImageMetrics();
+		imgEl.addEventListener('load', updateImageMetrics);
+		window.addEventListener('resize', updateImageMetrics);
+
+		return () => {
+			imgEl.removeEventListener('load', updateImageMetrics);
+			window.removeEventListener('resize', updateImageMetrics);
+		};
+	});
+
 	function GetFace(i: number) {
 		let person = image[1].people as PersonWithFacesResponseDto[];
-
 		person = person.filter((x) => x.name);
-
 		return person[i].faces[0];
 	}
 
 	function GetPosX(i: number) {
-		if (hasPerson) {
-			let face = GetFace(i);
-			if (!face) return;
-			return calcPercent(face.boundingBoxX1 ?? 0, face.imageWidth ?? 1);
-		} else {
-			return 0;
-		}
+		const face = GetFace(i);
+		if (!face) return 0;
+		return ((face.boundingBoxX1 ?? 0) * scaleX + offsetX) / wrapperWidth * 100;
 	}
 
 	function GetPosY(i: number) {
-		if (hasPerson) {
-			let face = GetFace(i);
-			if (!face) return;
-			return calcPercent(face.boundingBoxY1 ?? 0, face.imageHeight ?? 1);
-		} else {
-			return 0;
-		}
+		return 10;
+		const face = GetFace(i);
+		if (!face) return 0;
+		return ((face.boundingBoxY1 ?? 0) * scaleY + offsetY) / wrapperHeight * 100;
 	}
 
 	function getCenterX(i: number) {
-		if (hasPerson && imageZoom) {
-			let face = GetFace(i);
-			if (!face) return;
-
-			let midX = ((face.boundingBoxX2 ?? 0) - (face.boundingBoxX1 ?? 0)) / 2;
-
-			let part = (face.boundingBoxX1 ?? 0) + midX;
-
-			return calcPercent(part, face.imageWidth ?? 1);
-		} else {
-			return 0;
-		}
+		const face = GetFace(i);
+		if (!face) return 0;
+		const midX = ((face.boundingBoxX2 ?? 0) + (face.boundingBoxX1 ?? 0)) / 2;
+		return ((midX * scaleX + offsetX) / wrapperWidth) * 100;
 	}
 
 	function getCenterY(i: number) {
-		if (hasPerson && imageZoom) {
-			let face = GetFace(i);
-			if (!face) return;
-
-			let midY = ((face.boundingBoxY2 ?? 0) - (face.boundingBoxY1 ?? 0)) / 2;
-
-			let part = (face.boundingBoxY1 ?? 0) + midY;
-
-			return calcPercent(part, face.imageHeight ?? 1);
-		} else {
-			return 0;
-		}
+		const face = GetFace(i);
+		if (!face) return 0;
+		const midY = ((face.boundingBoxY2 ?? 0) + (face.boundingBoxY1 ?? 0)) / 2;
+		return ((midY * scaleY + offsetY) / wrapperHeight) * 100;
 	}
 
 	function getWidth(i: number) {
-		if (hasPerson) {
-			let face = GetFace(i);
-			if (!face) return;
-
-			return calcPercent(
-				(face.boundingBoxX2 ?? 0) - (face.boundingBoxX1 ?? 0),
-				face.imageWidth ?? 1
-			);
-		} else {
-			return 0;
-		}
+		return 10;
+		const face = GetFace(i);
+		if (!face) return 0;
+		return (((face.boundingBoxX2 ?? 0) - (face.boundingBoxX1 ?? 0)) * scaleX / wrapperWidth) * 100;
 	}
 
 	function getHeight(i: number) {
-		if (hasPerson) {
-			let face = GetFace(i);
-			if (!face) return;
-
-			return calcPercent(
-				(face.boundingBoxY2 ?? 0) - (face.boundingBoxY1 ?? 0),
-				face.imageHeight ?? 1
-			);
-		} else {
-			return 0;
-		}
-	}
-
-	function calcPercent(number1: number, number2: number) {
-		return (number1 / number2) * 100;
+		return 10;
+		const face = GetFace(i);
+		if (!face) return 0;
+		return (((face.boundingBoxY2 ?? 0) - (face.boundingBoxY1 ?? 0)) * scaleY / wrapperHeight) * 100;
 	}
 
 	function zoomEffect() {
@@ -127,7 +162,7 @@
 	}
 </script>
 
-<div class="immichframe_image place-self-center overflow-hidden">
+<div bind:this={wrapperEl} class="immichframe_image place-self-center overflow-hidden">
 	{#if debug}
 		{#each image[1].people?.map((x) => x.name) ?? [] as _, i}
 			<div
@@ -146,8 +181,9 @@
 	{/if}
 
 	<img
-		style="--interval: {interval + 2}s; --posX: {getCenterX(0)}%; --posY: {getCenterY(0)}%;"
-		class="{multi || imageFill
+		bind:this={imgEl}
+		style="--interval: {interval + 2}s; --posX: {positionX}%; --posY: {positionY}%;"
+		class="{multi || imageZoom
 			? 'w-screen h-dvh object-cover'
 			: 'max-h-screen h-dvh max-w-full object-contain'} 
 		{imageZoom
@@ -158,17 +194,13 @@
 				: hasPerson
 					? 'zoom-out-person'
 					: 'zoom-out'
-			: ''}"
+			: ''}
+			"
 		src={image[0]}
 		alt="data"
 	/>
 </div>
 <AssetInfo asset={image[1]} {showLocation} {showPhotoDate} {showImageDesc} {showPeopleDesc} />
-<img
-	class="absolute flex w-full h-full z-[-1]"
-	src={thumbHashToDataURL(decodeBase64(image[1].thumbhash ?? ''))}
-	alt="data"
-/>
 
 <style>
 	.zoom-in {
