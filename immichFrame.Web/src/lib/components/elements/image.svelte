@@ -130,7 +130,17 @@
 	});
 </script>
 
-<div bind:this={wrapperEl} style="overflow: hidden;">
+<div bind:this={wrapperEl} class="immichframe_image" style="overflow: hidden;">
+	{#if debug}
+		<div
+			class="face z-[900] bg-red-600 absolute"
+			style="top: {(-centerY*scale + wrapperHeight/2) + GetFaceBounds().Y1*scale}px;
+			left: {(-centerX*scale + wrapperWidth/2) + GetFaceBounds().X1*scale}px;
+			width: {(GetFaceBounds().X2-GetFaceBounds().X1)*scale}px;
+			height: {(GetFaceBounds().Y2-GetFaceBounds().Y1)*scale}px;"
+		></div>
+	{/if}
+	
 	<img
 		bind:this={imgEl}
 		style="
