@@ -42,7 +42,25 @@
 	let scale = $state(1.0);
 
 	let hasPerson = $derived(image[1].people?.filter((x) => x.name).length ?? 0 > 0);
-	
+
+	function GetFaceBounds() {
+		let persons = image[1].people as PersonWithFacesResponseDto[];
+		persons = persons.filter((x) => x.name);
+
+		let faceBoundsX1 = 1000000;
+		let faceBoundsY1 = 1000000;
+		let faceBoundsX2 = 0;
+		let faceBoundsY2 = 0;
+		for (let i = 0; i < persons.length; i++) {
+			let face = persons[i].faces[0];
+			faceBoundsX1 = Math.min(face.boundingBoxX1 ?? 0, faceBoundsX1);
+			faceBoundsY1 = Math.min(face.boundingBoxY1 ?? 0, faceBoundsY1);
+			faceBoundsX2 = Math.max(face.boundingBoxX2 ?? 0, faceBoundsX2);
+			faceBoundsY2 = Math.max(face.boundingBoxY2 ?? 0, faceBoundsY2);
+		}
+		return {X1: faceBoundsX1, Y1: faceBoundsY1, X2: faceBoundsX2, Y2: faceBoundsY2};
+	}
+
 	onMount(() => {
 		function updateImageMetrics() {
 			
@@ -68,26 +86,12 @@
 			if (!hasPerson) {
 				return;
 			}
-			
-			let faceBoundsX1 = 1000000;
-			let faceBoundsY1 = 1000000;
-			let faceBoundsX2 = 0;
-			let faceBoundsY2 = 0;
 
-			let persons = image[1].people as PersonWithFacesResponseDto[];
-			persons = persons.filter((x) => x.name);
+			const faceBounds = GetFaceBounds();
 			
-			for (let i = 0; i < persons.length; i++) {
-				let face = persons[i].faces[0];
-				faceBoundsX1 = Math.min(face.boundingBoxX1 ?? 0, faceBoundsX1);
-				faceBoundsY1 = Math.min(face.boundingBoxY1 ?? 0, faceBoundsY1);
-				faceBoundsX2 = Math.max(face.boundingBoxX2 ?? 0, faceBoundsX2);
-				faceBoundsY2 = Math.max(face.boundingBoxY2 ?? 0, faceBoundsY2);
-			}
-
 			// 2. decrease scale until face rect could fit into screen
-			const faceBoundsWidth = faceBoundsX2 - faceBoundsX1;
-			const faceBoundsHeight = faceBoundsY2 - faceBoundsY1;
+			const faceBoundsWidth = faceBounds.X2 - faceBounds.X1;
+			const faceBoundsHeight = faceBounds.Y2 - faceBounds.Y1;
 			scale *= Math.min(wrapperWidth / (scale * faceBoundsWidth), 1)
 			scale *= Math.min(wrapperHeight / (scale * faceBoundsHeight), 1)
 			
@@ -100,18 +104,18 @@
 			const visibleY1 = centerY - (visibleHeight / 2);
 			const visibleY2 = centerY + (visibleHeight / 2);
 
-			if (visibleX1 > faceBoundsX1) {
-				centerX -= visibleX1 - faceBoundsX1;
+			if (visibleX1 > faceBounds.X1) {
+				centerX -= visibleX1 - faceBounds.X1;
 			}
-			else if (visibleX2 < faceBoundsX2) {
-				centerX += faceBoundsX2 - visibleX2;
+			else if (visibleX2 < faceBounds.X2) {
+				centerX += faceBounds.X2 - visibleX2;
 			}
 
-			if (visibleY1 > faceBoundsY1) {
-				centerY -= visibleY1 - faceBoundsY1;
+			if (visibleY1 > faceBounds.Y1) {
+				centerY -= visibleY1 - faceBounds.Y1;
 			} 
-			else if (visibleY2 < faceBoundsY2) {
-				centerY += faceBoundsY2 - visibleY2;
+			else if (visibleY2 < faceBounds.Y2) {
+				centerY += faceBounds.Y2 - visibleY2;
 			}
 		}
 
