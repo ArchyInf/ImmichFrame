@@ -63,25 +63,34 @@
 
 	onMount(() => {
 		function updateImageMetrics() {
-			
-			// todo:imageFill
-			
 			naturalWidth = imgEl.naturalWidth;
 			naturalHeight = imgEl.naturalHeight;
 			wrapperWidth = wrapperEl.clientWidth;
 			wrapperHeight = wrapperEl.clientHeight;
 
 			// 1. fill screen without letterbox
-			let aspectImg = naturalWidth / naturalHeight;
-			let aspectDiv = wrapperWidth / wrapperHeight;
-			if(aspectImg > aspectDiv) {
-				scale = wrapperHeight / naturalHeight;
-			} else {
-				scale = wrapperWidth / naturalWidth;
-			}
-			
 			centerX = naturalWidth / 2;
 			centerY = naturalHeight / 2;
+			
+			let aspectImg = naturalWidth / naturalHeight;
+			let aspectDiv = wrapperWidth / wrapperHeight;
+			
+			if (imageFill) {
+				if (aspectImg > aspectDiv) {
+					scale = wrapperHeight / naturalHeight;
+				} else {
+					scale = wrapperWidth / naturalWidth;
+				}
+			}
+			else {
+				if (aspectImg > aspectDiv) {
+					scale = wrapperWidth / naturalWidth;
+				} else {
+					scale = wrapperHeight / naturalHeight;
+				}
+				return;
+			}
+			
 			
 			if (!hasPerson) {
 				return;
