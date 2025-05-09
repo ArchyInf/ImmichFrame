@@ -33,21 +33,13 @@
 	let imgEl: HTMLImageElement;
 	let wrapperEl: HTMLDivElement;
 	
-	let renderedWidth = 0;
-	let renderedHeight = 0;
-	let offsetX = 0;
-	let offsetY = 0;
-	let scaleX = 1;
-	let scaleY = 1;
-	let wrapperWidth = 100;
-	let wrapperHeight = 100;
-	
-	let positionX = $state(0);
-	let positionY = $state(0);
+	let wrapperWidth = $state(100);
+	let wrapperHeight = $state(100);
+	let centerX = $state(0);
+	let centerY = $state(0);
 	let naturalWidth = $state(0);
 	let naturalHeight = $state(0);
-
-	let hasPerson = $derived(image[1].people?.filter((x) => x.name).length ?? 0 > 0);
+	let scale = $state(1.0);
 
 	onMount(() => {
 		function updateImageMetrics() {
@@ -66,15 +58,7 @@
 				faceBoundsMaxY = Math.max(face.boundingBoxY2 ?? 0, faceBoundsMaxY);
 			}
 
-			positionX = -((faceBoundsMinX + faceBoundsMaxX) / 2);
-			positionY = -((faceBoundsMinY + faceBoundsMaxY) / 2);
-			
 			imageZoom = !debug;
-
-			if (!imgEl || !imgEl.complete || !wrapperEl) return;
-			
-			renderedWidth = imgEl.clientWidth;
-			renderedHeight = imgEl.clientHeight;
 
 			naturalWidth = imgEl.naturalWidth;
 			naturalHeight = imgEl.naturalHeight;
@@ -82,18 +66,26 @@
 			// size of render area
 			wrapperWidth = wrapperEl.clientWidth;
 			wrapperHeight = wrapperEl.clientHeight;
+			
+			let aspectImg = naturalWidth / naturalHeight;
+			let aspectDiv = wrapperWidth / wrapperHeight;
 
-			scaleX = renderedWidth / naturalWidth;
-			scaleY = renderedHeight / naturalHeight;
-
-			offsetX = (wrapperWidth - renderedWidth) / 2;
-			offsetY = (wrapperHeight - renderedHeight) / 2;
+			centerX = ((faceBoundsMinX + faceBoundsMaxX) / 2);
+			centerY = ((faceBoundsMinY + faceBoundsMaxY) / 2);
+			
+			if(aspectImg > aspectDiv) {
+				centerY = naturalHeight / 2;
+				scale = wrapperHeight / naturalHeight;
+			} else {
+				centerX = naturalWidth / 2;
+				scale = wrapperWidth / naturalWidth;
+			}
 
 			if (debug) console.log(`X ${faceBoundsMinX}`);
 			if (debug) console.log(`Y ${faceBoundsMinY}`);
 			if (debug) console.log(`W ${faceBoundsMaxX}`);
 			if (debug) console.log(`H ${faceBoundsMaxY}`);
-			if (debug) console.log(`Pos (${positionX},${positionY})`);
+			if (debug) console.log(`Pos (${centerX},${centerY})`);
 			if (debug) console.log(`natural (${naturalWidth},${naturalHeight})`);
 			// if (debug) console.log(`X ${imgEl.getBoundingClientRect().x}`);
 			// if (debug) console.log(`Y ${imgEl.getBoundingClientRect().y}`);
@@ -117,8 +109,8 @@
 		bind:this={imgEl}
 		style="
 			max-width: none;
-			width: {naturalWidth/2}px; height: {naturalHeight/2}px;
-			transform: translate({positionX/2 + wrapperWidth/2}px, {positionY/2 + wrapperHeight/2}px);
+			width: {naturalWidth*scale}px; height: {naturalHeight*scale}px;
+			transform: translate({-centerX*scale + wrapperWidth/2}px, {-centerY*scale + wrapperHeight/2}px);
 		"
 		src={image[0]}
 		alt="data"
