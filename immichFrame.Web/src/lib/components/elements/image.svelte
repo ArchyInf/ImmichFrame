@@ -104,14 +104,14 @@
 				centerX -= visibleX1 - faceBoundsX1;
 			}
 			else if (visibleX2 < faceBoundsX2) {
-				centerX -= faceBoundsX2 - visibleX2;
+				centerX += faceBoundsX2 - visibleX2;
 			}
 
 			if (visibleY1 > faceBoundsY1) {
 				centerY -= visibleY1 - faceBoundsY1;
 			} 
 			else if (visibleY2 < faceBoundsY2) {
-				centerY -= faceBoundsY2 - visibleY2;
+				centerY += faceBoundsY2 - visibleY2;
 			}
 		}
 
