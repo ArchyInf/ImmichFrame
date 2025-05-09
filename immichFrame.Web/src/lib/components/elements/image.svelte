@@ -74,10 +74,11 @@
 			let faceBoundsX2 = 0;
 			let faceBoundsY2 = 0;
 
-			let person = image[1].people as PersonWithFacesResponseDto[];
-			for (let i = 0; i < person.length; i++) {
-				person = person.filter((x) => x.name);
-				let face = person[i].faces[0];
+			let persons = image[1].people as PersonWithFacesResponseDto[];
+			persons = persons.filter((x) => x.name);
+			
+			for (let i = 0; i < persons.length; i++) {
+				let face = persons[i].faces[0];
 				faceBoundsX1 = Math.min(face.boundingBoxX1 ?? 0, faceBoundsX1);
 				faceBoundsY1 = Math.min(face.boundingBoxY1 ?? 0, faceBoundsY1);
 				faceBoundsX2 = Math.max(face.boundingBoxX2 ?? 0, faceBoundsX2);
