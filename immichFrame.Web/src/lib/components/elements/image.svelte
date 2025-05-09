@@ -29,7 +29,7 @@
 		multi = false
 	}: Props = $props();
 
-	let debug = true;
+	let debug = false;
 	let imgEl: HTMLImageElement;
 	let wrapperEl: HTMLDivElement;
 	
@@ -64,7 +64,7 @@
 	onMount(() => {
 		function updateImageMetrics() {
 			
-			imageZoom = !debug;
+			// todo:imageFill
 			
 			naturalWidth = imgEl.naturalWidth;
 			naturalHeight = imgEl.naturalHeight;
@@ -128,9 +128,13 @@
 			window.removeEventListener('resize', updateImageMetrics);
 		};
 	});
+	
+	function zoomEffect() {
+		return 0.5 > Math.random();
+	}
 </script>
 
-<div bind:this={wrapperEl} class="immichframe_image" style="overflow: hidden;">
+<div bind:this={wrapperEl} class="immichframe_image overflow-hidden">
 	{#if debug}
 		<div
 			class="face z-[900] bg-red-600 absolute"
@@ -144,15 +148,84 @@
 	<img
 		bind:this={imgEl}
 		style="
+		    --interval: {interval + 2}s;
+		    --posX: {scale*(GetFaceBounds().X2+GetFaceBounds().X1)/2}px;
+		    --posY: {scale*(GetFaceBounds().Y2+GetFaceBounds().Y1)/2}px;
 			max-width: none;
 			width: {naturalWidth*scale}px; height: {naturalHeight*scale}px;
 			transform: translate({-centerX*scale + wrapperWidth/2}px, {-centerY*scale + wrapperHeight/2}px);
 		"
+		class="{false
+			? zoomEffect()
+				? hasPerson
+					? 'zoom-in-person'
+					: 'zoom-in'
+				: hasPerson
+					? 'zoom-out-person'
+					: 'zoom-out'
+			: ''}"
 		src={image[0]}
 		alt="data"
 	/>
 </div>
 <AssetInfo asset={image[1]} {showLocation} {showPhotoDate} {showImageDesc} {showPeopleDesc} />
+<img
+		class="absolute flex w-full h-full z-[-1]"
+		src={thumbHashToDataURL(decodeBase64(image[1].thumbhash ?? ''))}
+		alt="data"
+/>
 
 <style>
+	.zoom-in {
+		animation: zoom-in var(--interval) ease-out normal forwards;
+	}
+	.zoom-in-person {
+		animation: zoom-in-person var(--interval) ease-out normal forwards;
+	}
+	.zoom-out {
+		animation: zoom-out var(--interval) ease-out normal forwards;
+	}
+	.zoom-out-person {
+		animation: zoom-out-person var(--interval) ease-out normal forwards;
+	}
+
+	@keyframes zoom-in {
+		from {
+			transform: scale(1);
+		}
+		to {
+			transform: scale(1.3);
+		}
+	}
+
+	@keyframes zoom-in-person {
+		from {
+			transform: scale(1);
+			transform-origin: center;
+		}
+		to {
+			transform: scale(1.5);
+			transform-origin: var(--posX) var(--posY);
+		}
+	}
+
+	@keyframes zoom-out {
+		from {
+			transform: scale(1.3);
+		}
+		to {
+			transform: scale(1);
+		}
+	}
+
+	@keyframes zoom-out-person {
+		from {
+			transform: scale(1.5);
+			transform-origin: var(--posX) var(--posY);
+		}
+		to {
+			transform: scale(1);
+			transform-origin: center;
+		}
+	}
 </style>
