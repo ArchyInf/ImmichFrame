@@ -43,54 +43,69 @@
 
 	onMount(() => {
 		function updateImageMetrics() {
-			let faceBoundsMinX = 1000000;
-			let faceBoundsMinY = 1000000;
-			let faceBoundsMaxX = 0;
-			let faceBoundsMaxY = 0;
+			let faceBoundsX1 = 1000000;
+			let faceBoundsY1 = 1000000;
+			let faceBoundsX2 = 0;
+			let faceBoundsY2 = 0;
 
 			let person = image[1].people as PersonWithFacesResponseDto[];
 			for (let i = 0; i < person.length; i++) {
 				person = person.filter((x) => x.name);
 				let face = person[i].faces[0];
-				faceBoundsMinX = Math.min(face.boundingBoxX1 ?? 0, faceBoundsMinX);
-				faceBoundsMinY = Math.min(face.boundingBoxY1 ?? 0, faceBoundsMinY);
-				faceBoundsMaxX = Math.max(face.boundingBoxX2 ?? 0, faceBoundsMaxX);
-				faceBoundsMaxY = Math.max(face.boundingBoxY2 ?? 0, faceBoundsMaxY);
+				faceBoundsX1 = Math.min(face.boundingBoxX1 ?? 0, faceBoundsX1);
+				faceBoundsY1 = Math.min(face.boundingBoxY1 ?? 0, faceBoundsY1);
+				faceBoundsX2 = Math.max(face.boundingBoxX2 ?? 0, faceBoundsX2);
+				faceBoundsY2 = Math.max(face.boundingBoxY2 ?? 0, faceBoundsY2);
 			}
 
 			imageZoom = !debug;
 
 			naturalWidth = imgEl.naturalWidth;
 			naturalHeight = imgEl.naturalHeight;
-		
-			// size of render area
 			wrapperWidth = wrapperEl.clientWidth;
 			wrapperHeight = wrapperEl.clientHeight;
-			
+		
+			// idea: enforce faceBounds to be visible
+			// 1. fill screen without letterbox
 			let aspectImg = naturalWidth / naturalHeight;
 			let aspectDiv = wrapperWidth / wrapperHeight;
-
-			centerX = ((faceBoundsMinX + faceBoundsMaxX) / 2);
-			centerY = ((faceBoundsMinY + faceBoundsMaxY) / 2);
-			
 			if(aspectImg > aspectDiv) {
-				centerY = naturalHeight / 2;
 				scale = wrapperHeight / naturalHeight;
 			} else {
-				centerX = naturalWidth / 2;
 				scale = wrapperWidth / naturalWidth;
 			}
 
-			if (debug) console.log(`X ${faceBoundsMinX}`);
-			if (debug) console.log(`Y ${faceBoundsMinY}`);
-			if (debug) console.log(`W ${faceBoundsMaxX}`);
-			if (debug) console.log(`H ${faceBoundsMaxY}`);
-			if (debug) console.log(`Pos (${centerX},${centerY})`);
-			if (debug) console.log(`natural (${naturalWidth},${naturalHeight})`);
-			// if (debug) console.log(`X ${imgEl.getBoundingClientRect().x}`);
-			// if (debug) console.log(`Y ${imgEl.getBoundingClientRect().y}`);
-			// if (debug) console.log(`W ${imgEl.getBoundingClientRect().width}`);
-			// if (debug) console.log(`H ${imgEl.getBoundingClientRect().height}`);
+			centerX = naturalWidth / 2;
+			centerY = naturalHeight / 2;
+			
+			// 2. decrease scale until face rect could fit into screen
+			let faceBoundsWidth = faceBoundsX2 - faceBoundsX1;
+			let faceBoundsHeight = faceBoundsY2 - faceBoundsY1;
+			scale = scale * Math.min(wrapperWidth / (scale * faceBoundsWidth), 1)
+			scale = scale * Math.min(wrapperHeight / (scale * faceBoundsHeight), 1)
+			
+			// 3. move center until faces are on screen
+			const visibleWidth = wrapperWidth / scale;
+			const visibleHeight = wrapperHeight / scale;
+			
+			let visibleX1 = centerX - (visibleWidth / 2);
+			let visibleX2 = centerX + (visibleWidth / 2);
+			let visibleY1 = centerY - (visibleHeight / 2);
+			let visibleY2 = centerY + (visibleHeight / 2);
+
+			if (visibleX1 > faceBoundsX1) {
+				centerY -= visibleX1 - faceBoundsX1;
+			}
+			else if (visibleX2 < faceBoundsX2) {
+				centerY -= faceBoundsX2 - visibleX2;
+			}
+
+			if (visibleY1 > faceBoundsY1) {
+				centerY -= visibleY1 - faceBoundsY1;
+			} 
+			else if (visibleY2 < faceBoundsY2) {
+				centerY -= faceBoundsY2 - visibleY2;
+			}
 		}
 
 		updateImageMetrics();
