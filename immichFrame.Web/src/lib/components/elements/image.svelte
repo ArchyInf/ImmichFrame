@@ -178,8 +178,10 @@
 		bind:this={imgEl}
 		style="
 		    --interval: {interval + 2}s;
-		    --posX: {scale*(GetFacesBounds().X2+GetFacesBounds().X1)/2}px;
-		    --posY: {scale*(GetFacesBounds().Y2+GetFacesBounds().Y1)/2}px;
+		    --focusX: {scale*(GetFacesBounds().X2+GetFacesBounds().X1)/2}px;
+		    --focusY: {scale*(GetFacesBounds().Y2+GetFacesBounds().Y1)/2}px;
+		    --centerX: {-centerX*scale + wrapperWidth/2}px;
+		    --centerY: {-centerY*scale + wrapperHeight/2}px;
 			max-width: none;
 			width: {naturalWidth*scale}px; height: {naturalHeight*scale}px;
 			transform: translate({-centerX*scale + wrapperWidth/2}px, {-centerY*scale + wrapperHeight/2}px);
@@ -220,41 +222,41 @@
 
 	@keyframes zoom-in {
 		from {
-			transform: scale(1);
+			transform: scale(1) translate(var(--centerX), var(--centerY));
 		}
 		to {
-			transform: scale(1.3);
+			transform: scale(1.3) translate(var(--centerX), var(--centerY));
 		}
 	}
 
 	@keyframes zoom-in-person {
 		from {
-			transform: scale(1);
-			transform-origin: center;
+			transform: scale(1) translate(var(--centerX), var(--centerY));
+			transform-origin: var(--centerX) var(--centerY);
 		}
 		to {
-			transform: scale(1.5);
-			transform-origin: var(--posX) var(--posY);
+			transform: scale(1.5) translate(var(--centerX), var(--centerY));
+			transform-origin: var(--focusX) var(--focusY);
 		}
 	}
 
 	@keyframes zoom-out {
 		from {
-			transform: scale(1.3);
+			transform: scale(1.3) translate(var(--centerX), var(--centerY));
 		}
 		to {
-			transform: scale(1);
+			transform: scale(1) translate(var(--centerX), var(--centerY));
 		}
 	}
 
 	@keyframes zoom-out-person {
 		from {
-			transform: scale(1.5);
-			transform-origin: var(--posX) var(--posY);
+			transform: scale(1.5) translate(var(--centerX), var(--centerY));
+			transform-origin: var(--focusX) var(--focusY);
 		}
 		to {
-			transform: scale(1);
-			transform-origin: center;
+			transform: scale(1) translate(var(--centerX), var(--centerY));
+			transform-origin: var(--centerX) var(--centerY);
 		}
 	}
 </style>
