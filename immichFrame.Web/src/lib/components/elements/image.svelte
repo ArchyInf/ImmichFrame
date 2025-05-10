@@ -43,20 +43,38 @@
 
 	let hasPerson = $derived(image[1].people?.filter((x) => x.name).length ?? 0 > 0);
 
-	function GetFaceBounds() {
+	function GetBounds(face: any, scale: number) {
+		let x1 = face.boundingBoxX1 ?? 0;
+		let x2 = face.boundingBoxX2 ?? 0;
+		let y1 = face.boundingBoxY1 ?? 0;
+		let y2 = face.boundingBoxY2 ?? 0;
+		const centerX = (x1 + x2) / 2;
+		const centerY = (y1 + y2) / 2;
+		const width = (x2 - x1) / 2;
+		const height = (y2 - y1) / 2;
+		let bounds = {X1: centerX - width * scale, Y1: centerY - height * scale, X2: centerX + width * scale, Y2: centerY + height * scale};
+		bounds.X1 = Math.max(bounds.X1, 0);
+		bounds.Y1 = Math.max(bounds.Y1, 0);
+		bounds.X2 = Math.min(bounds.X2, naturalWidth);
+		bounds.Y2 = Math.min(bounds.Y2, naturalHeight);
+		return bounds;
+	}
+
+	function GetFacesBounds() {
 		let persons = image[1].people as PersonWithFacesResponseDto[];
 		persons = persons.filter((x) => x.name);
-
+		
+		const faceScale = 2;
 		let faceBoundsX1 = 1000000;
 		let faceBoundsY1 = 1000000;
 		let faceBoundsX2 = 0;
 		let faceBoundsY2 = 0;
 		for (let i = 0; i < persons.length; i++) {
-			let face = persons[i].faces[0];
-			faceBoundsX1 = Math.min(face.boundingBoxX1 ?? 0, faceBoundsX1);
-			faceBoundsY1 = Math.min(face.boundingBoxY1 ?? 0, faceBoundsY1);
-			faceBoundsX2 = Math.max(face.boundingBoxX2 ?? 0, faceBoundsX2);
-			faceBoundsY2 = Math.max(face.boundingBoxY2 ?? 0, faceBoundsY2);
+			let bounds = GetBounds(persons[i].faces[0], faceScale);
+			faceBoundsX1 = Math.min(bounds.X1, faceBoundsX1);
+			faceBoundsY1 = Math.min(bounds.Y1, faceBoundsY1);
+			faceBoundsX2 = Math.max(bounds.X2, faceBoundsX2);
+			faceBoundsY2 = Math.max(bounds.Y2, faceBoundsY2);
 		}
 		return {X1: faceBoundsX1, Y1: faceBoundsY1, X2: faceBoundsX2, Y2: faceBoundsY2};
 	}
@@ -96,7 +114,7 @@
 				return;
 			}
 
-			const faceBounds = GetFaceBounds();
+			const faceBounds = GetFacesBounds();
 			
 			// 2. decrease scale until face rect could fit into screen
 			const faceBoundsWidth = faceBounds.X2 - faceBounds.X1;
@@ -147,10 +165,10 @@
 	{#if debug}
 		<div
 			class="face z-[900] bg-red-600 absolute"
-			style="top: {(-centerY*scale + wrapperHeight/2) + GetFaceBounds().Y1*scale}px;
-			left: {(-centerX*scale + wrapperWidth/2) + GetFaceBounds().X1*scale}px;
-			width: {(GetFaceBounds().X2-GetFaceBounds().X1)*scale}px;
-			height: {(GetFaceBounds().Y2-GetFaceBounds().Y1)*scale}px;"
+			style="top: {(-centerY*scale + wrapperHeight/2) + GetFacesBounds().Y1*scale}px;
+			left: {(-centerX*scale + wrapperWidth/2) + GetFacesBounds().X1*scale}px;
+			width: {(GetFacesBounds().X2-GetFacesBounds().X1)*scale}px;
+			height: {(GetFacesBounds().Y2-GetFacesBounds().Y1)*scale}px;"
 		></div>
 	{/if}
 	
@@ -158,8 +176,8 @@
 		bind:this={imgEl}
 		style="
 		    --interval: {interval + 2}s;
-		    --posX: {scale*(GetFaceBounds().X2+GetFaceBounds().X1)/2}px;
-		    --posY: {scale*(GetFaceBounds().Y2+GetFaceBounds().Y1)/2}px;
+		    --posX: {scale*(GetFacesBounds().X2+GetFacesBounds().X1)/2}px;
+		    --posY: {scale*(GetFacesBounds().Y2+GetFacesBounds().Y1)/2}px;
 			max-width: none;
 			width: {naturalWidth*scale}px; height: {naturalHeight*scale}px;
 			transform: translate({-centerX*scale + wrapperWidth/2}px, {-centerY*scale + wrapperHeight/2}px);
