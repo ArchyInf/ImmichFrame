@@ -235,7 +235,7 @@
 			transform-origin: var(--centerX) var(--centerY);
 		}
 		to {
-			transform: scale(1.5) translate(var(--centerX), var(--centerY));
+			transform: scale(1.3) translate(var(--centerX), var(--centerY));
 			transform-origin: var(--focusX) var(--focusY);
 		}
 	}
@@ -251,7 +251,7 @@
 
 	@keyframes zoom-out-person {
 		from {
-			transform: scale(1.5) translate(var(--centerX), var(--centerY));
+			transform: scale(1.3) translate(var(--centerX), var(--centerY));
 			transform-origin: var(--focusX) var(--focusY);
 		}
 		to {
