@@ -64,7 +64,7 @@
 		let persons = image[1].people as PersonWithFacesResponseDto[];
 		persons = persons.filter((x) => x.name);
 		
-		const faceScale = 2;
+		const faceScale = 1.5;
 		let faceBoundsX1 = 1000000;
 		let faceBoundsY1 = 1000000;
 		let faceBoundsX2 = 0;
