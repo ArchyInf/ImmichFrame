@@ -184,7 +184,7 @@
 			width: {naturalWidth*scale}px; height: {naturalHeight*scale}px;
 			transform: translate({-centerX*scale + wrapperWidth/2}px, {-centerY*scale + wrapperHeight/2}px);
 		"
-		class="{false
+		class="{imageZoom
 			? zoomEffect()
 				? hasPerson
 					? 'zoom-in-person'
