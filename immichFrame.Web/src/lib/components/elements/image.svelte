@@ -70,11 +70,13 @@
 		let faceBoundsX2 = 0;
 		let faceBoundsY2 = 0;
 		for (let i = 0; i < persons.length; i++) {
-			let bounds = GetBounds(persons[i].faces[0], faceScale);
-			faceBoundsX1 = Math.min(bounds.X1, faceBoundsX1);
-			faceBoundsY1 = Math.min(bounds.Y1, faceBoundsY1);
-			faceBoundsX2 = Math.max(bounds.X2, faceBoundsX2);
-			faceBoundsY2 = Math.max(bounds.Y2, faceBoundsY2);
+			for (let j = 0; j < persons[i].faces.length; j++) {
+				let bounds = GetBounds(persons[i].faces[j], faceScale);
+				faceBoundsX1 = Math.min(bounds.X1, faceBoundsX1);
+				faceBoundsY1 = Math.min(bounds.Y1, faceBoundsY1);
+				faceBoundsX2 = Math.max(bounds.X2, faceBoundsX2);
+				faceBoundsY2 = Math.max(bounds.Y2, faceBoundsY2);	
+			}
 		}
 		return {X1: faceBoundsX1, Y1: faceBoundsY1, X2: faceBoundsX2, Y2: faceBoundsY2};
 	}
