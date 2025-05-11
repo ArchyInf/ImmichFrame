@@ -30,18 +30,18 @@
 	}: Props = $props();
 
 	let debug = false;
-	let imgEl: HTMLImageElement;
-	let wrapperEl: HTMLDivElement;
+	let imageElement: HTMLImageElement;
+	let frameElement: HTMLDivElement;
 	
-	let frameWidth = $state(100);
-	let frameHeight = $state(100);
+	let frameWidth = $state(0);
+	let frameHeight = $state(0);
 	let centerX = $state(0);
 	let centerY = $state(0);
 	let naturalWidth = $state(0);
 	let naturalHeight = $state(0);
-	let scale = $state(1.0);
-	let focusX = $state(0.5);
-	let focusY = $state(0.5);
+	let scale = $state(0.0);
+	let focusX = $state(0.0);
+	let focusY = $state(0.0);
 
 	let hasPerson = $derived(image[1].people?.filter((x) => x.name).length ?? 0 > 0);
 
@@ -111,10 +111,10 @@
 
 	onMount(() => {
 		function updateImageMetrics() {
-			naturalWidth = imgEl.naturalWidth;
-			naturalHeight = imgEl.naturalHeight;
-			frameWidth = wrapperEl.clientWidth;
-			frameHeight = wrapperEl.clientHeight;
+			naturalWidth = imageElement.naturalWidth;
+			naturalHeight = imageElement.naturalHeight;
+			frameWidth = frameElement.clientWidth;
+			frameHeight = frameElement.clientHeight;
 
 			// 1. fill screen without letterbox
 			centerX = naturalWidth / 2;
@@ -184,11 +184,11 @@
 			focusY = centerY;
 		}
 
-		imgEl.addEventListener('load', updateImageMetrics);
+		imageElement.addEventListener('load', updateImageMetrics);
 		window.addEventListener('resize', updateImageMetrics);
 
 		return () => {
-			imgEl.removeEventListener('load', updateImageMetrics);
+			imageElement.removeEventListener('load', updateImageMetrics);
 			window.removeEventListener('resize', updateImageMetrics);
 		};
 	});
@@ -198,7 +198,7 @@
 	}
 </script>
 
-<div bind:this={wrapperEl} class="immichframe_image overflow-hidden">
+<div bind:this={frameElement} class="immichframe_image overflow-hidden">
 	{#if debug}
 		<div
 			class="face z-[900] bg-red-600 absolute"
@@ -210,7 +210,7 @@
 	{/if}
 	
 	<img
-		bind:this={imgEl}
+		bind:this={imageElement}
 		style="
 			max-width: none;
 			transform-origin: 0px 0px;
