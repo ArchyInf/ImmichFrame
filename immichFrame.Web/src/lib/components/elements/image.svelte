@@ -45,15 +45,7 @@
 
 	let hasPerson = $derived(image[1].people?.filter((x) => x.name).length ?? 0 > 0);
 
-	function GetBounds(face: any, scale: number) {
-		if (face == null) {
-			return {
-				X1: 0,
-				Y1: 0,
-				X2: 0,
-				Y2: 0
-			};
-		}
+	function GetFaceBounds(face: any, scale: number) {
 		let x1 = face.boundingBoxX1 ?? 0;
 		let x2 = face.boundingBoxX2 ?? 0;
 		let y1 = face.boundingBoxY1 ?? 0;
@@ -86,7 +78,7 @@
 		let faceBoundsY2 = 0;
 		for (let i = 0; i < persons.length; i++) {
 			for (let j = 0; j < persons[i].faces.length; j++) {
-				let bounds = GetBounds(persons[i].faces[j], faceScale);
+				let bounds = GetFaceBounds(persons[i].faces[j], faceScale);
 				faceBoundsX1 = Math.min(bounds.X1, faceBoundsX1);
 				faceBoundsY1 = Math.min(bounds.Y1, faceBoundsY1);
 				faceBoundsX2 = Math.max(bounds.X2, faceBoundsX2);
@@ -183,9 +175,14 @@
 
         updateImageMetrics();
 
-        let focusBounds = GetBounds(GetRandomFace(), 1);
-        focusX = (focusBounds.X2+focusBounds.X1)/2;
-        focusY = (focusBounds.Y2+focusBounds.Y1)/2;
+        if (hasPerson) {
+	        let focusBounds = GetFaceBounds(GetRandomFace(), 1);
+    	    focusX = (focusBounds.X2+focusBounds.X1)/2;
+        	focusY = (focusBounds.Y2+focusBounds.Y1)/2;
+        } else {
+            focusX = centerX;
+            focusY = centerY;
+        }
 
 		imgEl.addEventListener('load', updateImageMetrics);
 		window.addEventListener('resize', updateImageMetrics);
@@ -226,15 +223,12 @@
 			--centerY: {-centerY*scale}px;
 			--frameX: {frameWidth/2}px;
 			--frameY: {frameHeight/2}px;
+			--zoom: {hasPerson ? 1.5 : 1.3};
 		"
 		class="{imageZoom
 			? zoomEffect()
-				? hasPerson
-					? 'zoom-in-person'
-					: 'zoom-in'
-				: hasPerson
-					? 'zoom-out-person'
-					: 'zoom-out'
+				? 'zoom-in'
+				: 'zoom-out'
 			: 'static'}"
 		src={image[0]}
 		alt="data"
@@ -254,14 +248,8 @@
 	.zoom-in {
 		animation: zoom-in var(--interval) ease-out normal forwards;
 	}
-	.zoom-in-person {
-		animation: zoom-in-person var(--interval) ease-out normal forwards;
-	}
 	.zoom-out {
 		animation: zoom-out var(--interval) ease-out normal forwards;
-	}
-	.zoom-out-person {
-		animation: zoom-out-person var(--interval) ease-out normal forwards;
 	}
 
 	@keyframes zoom-in {
@@ -269,31 +257,13 @@
             transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
 		}
 		to {
-            transform: translate(var(--frameX), var(--frameY)) scale(1.3) translate(var(--centerX), var(--centerY));
+            transform: translate(var(--frameX), var(--frameY)) scale(var(--zoom)) translate(var(--focusX), var(--focusY));
 		}
 	}
-
-    @keyframes zoom-in-person {
-        from {
-            transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
-        }
-        to {
-            transform: translate(var(--frameX), var(--frameY)) scale(1.5) translate(var(--focusX), var(--focusY));
-        }
-    }
 	
 	@keyframes zoom-out {
 		from {
-            transform: translate(var(--frameX), var(--frameY)) scale(1.3) translate(var(--centerX), var(--centerY));
-		}
-		to {
-            transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
-		}
-	}
-
-	@keyframes zoom-out-person {
-		from {
-            transform: translate(var(--frameX), var(--frameY)) scale(1.5) translate(var(--focusX), var(--focusY));
+            transform: translate(var(--frameX), var(--frameY)) scale(var(--zoom)) translate(var(--focusX), var(--focusY));
 		}
 		to {
             transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
