@@ -146,10 +146,13 @@
 				return;
 			}
 
-            const faceBounds = GetFacesBounds();
-            const focusBounds = GetFaceBounds(focusFace, 1);
-            focusX = (focusBounds.X2+focusBounds.X1)/2;
-            focusY = (focusBounds.Y2+focusBounds.Y1)/2;
+			const faceBounds = GetFacesBounds();
+
+			// todo: add option
+			const focusSingle = false;
+			const focusBounds = focusSingle ? GetFaceBounds(focusFace, 1) : faceBounds;
+			focusX = (focusBounds.X2+focusBounds.X1)/2;
+			focusY = (focusBounds.Y2+focusBounds.Y1)/2;
 			
 			// 2. decrease scale until face rect could fit into screen
 			const faceBoundsWidth = faceBounds.X2 - faceBounds.X1;
@@ -178,8 +181,8 @@
 				centerY += faceBounds.Y2 - visibleY2;
 			}
 		}
-        
-        // random face once
+		
+		// random face once
 		focusFace = GetRandomFace();
 		
 		updateImageMetrics();
