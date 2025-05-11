@@ -215,14 +215,17 @@
 	<img
 		bind:this={imgEl}
 		style="
-			--interval: {interval + 2}s;
-			--focusX: {focusX*scale}px;
-			--focusY: {focusY*scale}px;
-			--centerX: {-centerX*scale + frameWidth/2}px;
-			--centerY: {-centerY*scale + frameHeight/2}px;
 			max-width: none;
+			transform-origin: 0px 0px;
 			width: {naturalWidth*scale}px; height: {naturalHeight*scale}px;
-			transform: translate({frameWidth/2}px, {frameHeight/2}px) translate({-centerX*scale}px, {-centerY*scale}px);
+			
+			--interval: {interval + 2}s;
+			--focusX: {-focusX*scale}px;
+			--focusY: {-focusY*scale}px;
+			--centerX: {-centerX*scale}px;
+			--centerY: {-centerY*scale}px;
+			--frameX: {frameWidth/2}px;
+			--frameY: {frameHeight/2}px;
 		"
 		class="{imageZoom
 			? zoomEffect()
@@ -232,7 +235,7 @@
 				: hasPerson
 					? 'zoom-out-person'
 					: 'zoom-out'
-			: ''}"
+			: 'static'}"
 		src={image[0]}
 		alt="data"
 	/>
@@ -245,6 +248,9 @@
 />
 
 <style>
+    .static {
+        transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
+    }
 	.zoom-in {
 		animation: zoom-in var(--interval) ease-out normal forwards;
 	}
@@ -260,41 +266,37 @@
 
 	@keyframes zoom-in {
 		from {
-			transform: scale(1) translate(var(--centerX), var(--centerY));
+            transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
 		}
 		to {
-			transform: scale(1.3) translate(var(--centerX), var(--centerY));
+            transform: translate(var(--frameX), var(--frameY)) scale(1.3) translate(var(--centerX), var(--centerY));
 		}
 	}
 
-	@keyframes zoom-in-person {
-		from {
-			transform: scale(1) translate(var(--centerX), var(--centerY));
-			transform-origin: var(--centerX) var(--centerY);
-		}
-		to {
-			transform: scale(1.3) translate(var(--centerX), var(--centerY));
-			transform-origin: var(--focusX) var(--focusY);
-		}
-	}
-
+    @keyframes zoom-in-person {
+        from {
+            transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
+        }
+        to {
+            transform: translate(var(--frameX), var(--frameY)) scale(1.5) translate(var(--focusX), var(--focusY));
+        }
+    }
+	
 	@keyframes zoom-out {
 		from {
-			transform: scale(1.3) translate(var(--centerX), var(--centerY));
+            transform: translate(var(--frameX), var(--frameY)) scale(1.3) translate(var(--centerX), var(--centerY));
 		}
 		to {
-			transform: scale(1) translate(var(--centerX), var(--centerY));
+            transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
 		}
 	}
 
 	@keyframes zoom-out-person {
 		from {
-			transform: scale(1.3) translate(var(--centerX), var(--centerY));
-			transform-origin: var(--focusX) var(--focusY);
+            transform: translate(var(--frameX), var(--frameY)) scale(1.5) translate(var(--focusX), var(--focusY));
 		}
 		to {
-			transform: scale(1) translate(var(--centerX), var(--centerY));
-			transform-origin: var(--centerX) var(--centerY);
+            transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
 		}
 	}
 </style>
