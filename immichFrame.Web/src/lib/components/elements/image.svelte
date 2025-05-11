@@ -40,8 +40,8 @@
 	let naturalWidth = $state(0);
 	let naturalHeight = $state(0);
 	let scale = $state(1.0);
-    let focusX = $state(0.5);
-    let focusY = $state(0.5);
+	let focusX = $state(0.5);
+	let focusY = $state(0.5);
 
 	let hasPerson = $derived(image[1].people?.filter((x) => x.name).length ?? 0 > 0);
 
@@ -89,16 +89,16 @@
 	}
 
 	function GetRandomFace() {
-        let persons = image[1].people as PersonWithFacesResponseDto[];
-        persons = persons.filter((x) => x.name);
-        
-        let count = 0;
-        for (let i = 0; i < persons.length; i++) {
-            count += persons[i].faces.length;
-        }
-        
-        let index = Math.floor(Math.random() * count);
-        count = 0;
+		let persons = image[1].people as PersonWithFacesResponseDto[];
+		persons = persons.filter((x) => x.name);
+		
+		let count = 0;
+		for (let i = 0; i < persons.length; i++) {
+			count += persons[i].faces.length;
+		}
+		
+		let index = Math.floor(Math.random() * count);
+		count = 0;
 		for (let i = 0; i < persons.length; i++) {
 			for (let j = 0; j < persons[i].faces.length; j++) {
 				if (count == index)
@@ -173,16 +173,16 @@
 			}
 		}
 
-        updateImageMetrics();
+		updateImageMetrics();
 
-        if (hasPerson) {
-	        let focusBounds = GetFaceBounds(GetRandomFace(), 1);
-    	    focusX = (focusBounds.X2+focusBounds.X1)/2;
-        	focusY = (focusBounds.Y2+focusBounds.Y1)/2;
-        } else {
-            focusX = centerX;
-            focusY = centerY;
-        }
+		if (hasPerson) {
+			let focusBounds = GetFaceBounds(GetRandomFace(), 1);
+			focusX = (focusBounds.X2+focusBounds.X1)/2;
+			focusY = (focusBounds.Y2+focusBounds.Y1)/2;
+		} else {
+			focusX = centerX;
+			focusY = centerY;
+		}
 
 		imgEl.addEventListener('load', updateImageMetrics);
 		window.addEventListener('resize', updateImageMetrics);
@@ -242,9 +242,9 @@
 />
 
 <style>
-    .static {
-        transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
-    }
+	.static {
+		transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
+	}
 	.zoom-in {
 		animation: zoom-in var(--interval) ease-out normal forwards;
 	}
@@ -254,19 +254,19 @@
 
 	@keyframes zoom-in {
 		from {
-            transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
+			transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
 		}
 		to {
-            transform: translate(var(--frameX), var(--frameY)) scale(var(--zoom)) translate(var(--focusX), var(--focusY));
+			transform: translate(var(--frameX), var(--frameY)) scale(var(--zoom)) translate(var(--focusX), var(--focusY));
 		}
 	}
 	
 	@keyframes zoom-out {
 		from {
-            transform: translate(var(--frameX), var(--frameY)) scale(var(--zoom)) translate(var(--focusX), var(--focusY));
+			transform: translate(var(--frameX), var(--frameY)) scale(var(--zoom)) translate(var(--focusX), var(--focusY));
 		}
 		to {
-            transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
+			transform: translate(var(--frameX), var(--frameY)) translate(var(--centerX), var(--centerY));
 		}
 	}
 </style>
