@@ -40,8 +40,10 @@
 	let naturalWidth = $state(0);
 	let naturalHeight = $state(0);
 	let scale = $state(0.0);
-	let focusX = $state(0.0);
-	let focusY = $state(0.0);
+	
+	let focusFace : any = $state(null);
+	let focusX = $state(0);
+	let focusY = $state(0);
 
 	let hasPerson = $derived(image[1].people?.filter((x) => x.name).length ?? 0 > 0);
 
@@ -135,15 +137,19 @@
 				} else {
 					scale = frameHeight / naturalHeight;
 				}
-				return;
 			}
-			
-			
+
+			focusX = centerX;
+			focusY = centerY;
+
 			if (!hasPerson) {
 				return;
 			}
 
-			const faceBounds = GetFacesBounds();
+            const faceBounds = GetFacesBounds();
+            const focusBounds = GetFaceBounds(focusFace, 1);
+            focusX = (focusBounds.X2+focusBounds.X1)/2;
+            focusY = (focusBounds.Y2+focusBounds.Y1)/2;
 			
 			// 2. decrease scale until face rect could fit into screen
 			const faceBoundsWidth = faceBounds.X2 - faceBounds.X1;
@@ -172,17 +178,11 @@
 				centerY += faceBounds.Y2 - visibleY2;
 			}
 		}
-
+        
+        // random face once
+		focusFace = GetRandomFace();
+		
 		updateImageMetrics();
-
-		if (hasPerson) {
-			let focusBounds = GetFaceBounds(GetRandomFace(), 1);
-			focusX = (focusBounds.X2+focusBounds.X1)/2;
-			focusY = (focusBounds.Y2+focusBounds.Y1)/2;
-		} else {
-			focusX = centerX;
-			focusY = centerY;
-		}
 
 		imageElement.addEventListener('load', updateImageMetrics);
 		window.addEventListener('resize', updateImageMetrics);
