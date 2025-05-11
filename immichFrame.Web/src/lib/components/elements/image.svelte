@@ -33,14 +33,15 @@
 	let imgEl: HTMLImageElement;
 	let wrapperEl: HTMLDivElement;
 	
-	let wrapperWidth = $state(100);
-	let wrapperHeight = $state(100);
+	let frameWidth = $state(100);
+	let frameHeight = $state(100);
 	let centerX = $state(0);
 	let centerY = $state(0);
 	let naturalWidth = $state(0);
 	let naturalHeight = $state(0);
 	let scale = $state(1.0);
-	let focusFace: any = $state(null);
+    let focusX = $state(0.5);
+    let focusY = $state(0.5);
 
 	let hasPerson = $derived(image[1].people?.filter((x) => x.name).length ?? 0 > 0);
 
@@ -103,8 +104,8 @@
         for (let i = 0; i < persons.length; i++) {
             count += persons[i].faces.length;
         }
-        let index = Math.floor(Math.random() * count);
         
+        let index = Math.floor(Math.random() * count);
         count = 0;
 		for (let i = 0; i < persons.length; i++) {
 			for (let j = 0; j < persons[i].faces.length; j++) {
@@ -120,27 +121,27 @@
 		function updateImageMetrics() {
 			naturalWidth = imgEl.naturalWidth;
 			naturalHeight = imgEl.naturalHeight;
-			wrapperWidth = wrapperEl.clientWidth;
-			wrapperHeight = wrapperEl.clientHeight;
+			frameWidth = wrapperEl.clientWidth;
+			frameHeight = wrapperEl.clientHeight;
 
 			// 1. fill screen without letterbox
 			centerX = naturalWidth / 2;
 			centerY = naturalHeight / 2;
 			
 			let aspectImg = naturalWidth / naturalHeight;
-			let aspectDiv = wrapperWidth / wrapperHeight;
+			let aspectDiv = frameWidth / frameHeight;
 			
 			if (imageFill) {
 				if (aspectImg > aspectDiv) {
-					scale = wrapperHeight / naturalHeight;
+					scale = frameHeight / naturalHeight;
 				} else {
-					scale = wrapperWidth / naturalWidth;
+					scale = frameWidth / naturalWidth;
 				}
 			} else {
 				if (aspectImg > aspectDiv) {
-					scale = wrapperWidth / naturalWidth;
+					scale = frameWidth / naturalWidth;
 				} else {
-					scale = wrapperHeight / naturalHeight;
+					scale = frameHeight / naturalHeight;
 				}
 				return;
 			}
@@ -155,12 +156,12 @@
 			// 2. decrease scale until face rect could fit into screen
 			const faceBoundsWidth = faceBounds.X2 - faceBounds.X1;
 			const faceBoundsHeight = faceBounds.Y2 - faceBounds.Y1;
-			scale *= Math.min(wrapperWidth / (scale * faceBoundsWidth), 1)
-			scale *= Math.min(wrapperHeight / (scale * faceBoundsHeight), 1)
+			scale *= Math.min(frameWidth / (scale * faceBoundsWidth), 1)
+			scale *= Math.min(frameHeight / (scale * faceBoundsHeight), 1)
 			
 			// 3. move center until faces are on screen
-			const visibleWidth = wrapperWidth / scale;
-			const visibleHeight = wrapperHeight / scale;
+			const visibleWidth = frameWidth / scale;
+			const visibleHeight = frameHeight / scale;
 			
 			const visibleX1 = centerX - (visibleWidth / 2);
 			const visibleX2 = centerX + (visibleWidth / 2);
@@ -180,9 +181,12 @@
 			}
 		}
 
-		focusFace = GetRandomFace();
+        updateImageMetrics();
 
-		updateImageMetrics();
+        let focusBounds = GetBounds(GetRandomFace(), 1);
+        focusX = (focusBounds.X2+focusBounds.X1)/2;
+        focusY = (focusBounds.Y2+focusBounds.Y1)/2;
+
 		imgEl.addEventListener('load', updateImageMetrics);
 		window.addEventListener('resize', updateImageMetrics);
 
@@ -201,8 +205,8 @@
 	{#if debug}
 		<div
 			class="face z-[900] bg-red-600 absolute"
-			style="top: {(-centerY*scale + wrapperHeight/2) + GetFacesBounds().Y1*scale}px;
-			left: {(-centerX*scale + wrapperWidth/2) + GetFacesBounds().X1*scale}px;
+			style="top: {(-centerY*scale + frameHeight/2) + GetFacesBounds().Y1*scale}px;
+			left: {(-centerX*scale + frameWidth/2) + GetFacesBounds().X1*scale}px;
 			width: {(GetFacesBounds().X2-GetFacesBounds().X1)*scale}px;
 			height: {(GetFacesBounds().Y2-GetFacesBounds().Y1)*scale}px;"
 		></div>
@@ -212,13 +216,13 @@
 		bind:this={imgEl}
 		style="
 			--interval: {interval + 2}s;
-			--focusX: {scale*(GetBounds(focusFace, 1).X2+GetBounds(focusFace, 1).X1)/2}px;
-			--focusY: {scale*(GetBounds(focusFace, 1).Y2+GetBounds(focusFace, 1).Y1)/2}px;
-			--centerX: {-centerX*scale + wrapperWidth/2}px;
-			--centerY: {-centerY*scale + wrapperHeight/2}px;
+			--focusX: {focusX*scale}px;
+			--focusY: {focusY*scale}px;
+			--centerX: {-centerX*scale + frameWidth/2}px;
+			--centerY: {-centerY*scale + frameHeight/2}px;
 			max-width: none;
 			width: {naturalWidth*scale}px; height: {naturalHeight*scale}px;
-			transform: translate({-centerX*scale + wrapperWidth/2}px, {-centerY*scale + wrapperHeight/2}px);
+			transform: translate({-centerX*scale + frameWidth/2}px, {-centerY*scale + frameHeight/2}px);
 		"
 		class="{imageZoom
 			? zoomEffect()
