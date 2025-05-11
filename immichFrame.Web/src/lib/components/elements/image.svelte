@@ -222,7 +222,7 @@
 			--centerY: {-centerY*scale + frameHeight/2}px;
 			max-width: none;
 			width: {naturalWidth*scale}px; height: {naturalHeight*scale}px;
-			transform: translate({-centerX*scale + frameWidth/2}px, {-centerY*scale + frameHeight/2}px);
+			transform: translate({frameWidth/2}px, {frameHeight/2}px) translate({-centerX*scale}px, {-centerY*scale}px);
 		"
 		class="{imageZoom
 			? zoomEffect()
